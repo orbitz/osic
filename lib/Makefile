@@ -1,4 +1,4 @@
-SUBDIRS =
+SUBDIRS = osic
 
 all_apps = $(SUBDIRS)
 

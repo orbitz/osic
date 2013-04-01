@@ -1,12 +1,12 @@
 CAMLP4=
-OCAMLC_OPTS=
-OCAMLOPT_OPTS=
+OCAMLC_OPTS=-package core,async,async_unix
+OCAMLOPT_OPTS=$(OCAMLC_OPTS)
 
-LIB_MODULES=
-NON_LIB_MODULES=
+LIB_MODULES=fifo_tail.ml irc_msg.ml irc.ml
+NON_LIB_MODULES=osic.ml
 
-BYTE_TARGETS=
-NATIVE_TARGETS=
+BYTE_TARGETS=osic.byte
+NATIVE_TARGETS=osic.native
 
 .PHONY: all test
 
