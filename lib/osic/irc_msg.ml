@@ -22,4 +22,4 @@ let msg ~d ~m = encode ("PRIVMSG " ^ d ^ " :" ^ m)
 
 let pong servers = encode ("PONG " ^ (String.concat ~sep:" " servers))
 
-let quit msg = encode ("QUIT " ^ msg)
+let quit msg = encode ("QUIT :" ^ msg)
