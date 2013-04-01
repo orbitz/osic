@@ -42,11 +42,6 @@ let mkfifo ?(perm = 0o666) path =
     ~name:"mkfifo"
     (fun () -> Core.Std.Unix.mkfifo ~perm path)
 
-let mkfifo_in ?(perm = 0o666) path name =
-  let path = Filename.concat path name in
-  mkfifo ~perm path >>= fun () ->
-  return path
-
 let client_cmd t cmd args =
   match cmd with
     | "JOIN" -> begin
@@ -112,8 +107,13 @@ let irc_cmd msg t =
     end
 
 let server_in_chan root =
-  mkfifo_in root "in" >>= fun path ->
-  return (Fifo_tail.create path)
+  let filepath = Filename.concat root "in" in
+  Unix.access filepath [`Exists] >>= function
+    | Ok () ->
+      return (Fifo_tail.create filepath)
+    | Error _ ->
+      mkfifo filepath >>= fun () ->
+      return (Fifo_tail.create filepath)
 
 let rec read_in_chan pipe_w in_chan =
   Pipe.read in_chan >>= function
