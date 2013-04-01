@@ -32,6 +32,7 @@ end
 type 'a looper = Run of ('a -> 'a Deferred.t) | Done
 
 type t = { irc      : Irc.t
+	 ; nick     : string
 	 ; root     : string
 	 ; pipe_r   : t looper Pipe.Reader.t
 	 ; out_chan : Writer.t
@@ -60,6 +61,10 @@ let client_cmd t cmd args =
 	None
       in
       ignore (send_msg ());
+      return t
+    end
+    | "WHOAMI" -> begin
+      Writer.write t.out_chan ("WHOAMI " ^ t.nick ^ "\n");
       return t
     end
     | "QUIT" -> begin
@@ -158,7 +163,7 @@ let connect host port password nick name root =
       let pipe_r, pipe_w = Pipe.create () in
       ignore (read_irc pipe_w irc);
       ignore (read_in_chan pipe_w in_chan);
-      loop { irc; root; pipe_r; out_chan = w }
+      loop { irc; nick; root; pipe_r; out_chan = w }
     | Error _ ->
       failwith "foo"
 
