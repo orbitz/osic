@@ -62,6 +62,10 @@ let client_cmd t cmd args =
       ignore (send_msg ());
       return t
     end
+    | "QUIT" -> begin
+      Irc.quit t.irc args;
+      return t
+    end
     | "REOPEN_OUT" -> begin
       Writer.close t.out_chan >>= fun () ->
       Writer.open_file ~append:true (Filename.concat t.root "out") >>= fun w ->
