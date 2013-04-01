@@ -12,7 +12,7 @@ module Msg : sig
 		 }
 
   type t =
-    | Unknown of string
+    | Raw     of string
     | Privmsg of privmsg
     | Ping    of string list
 

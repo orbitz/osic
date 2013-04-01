@@ -16,7 +16,7 @@ module Msg = struct
 		 }
 
   type t =
-    | Unknown of string
+    | Raw     of string
     | Privmsg of privmsg
     | Ping    of string list
 
@@ -52,7 +52,7 @@ module Msg = struct
       | Some (_, "PING", servers) ->
 	Ping servers
       | None | _ ->
-	Unknown s
+	Raw s
 end
 
 let maybe_send_password w = function

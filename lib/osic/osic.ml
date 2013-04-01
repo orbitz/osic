@@ -106,8 +106,8 @@ let irc_cmd msg t =
 	(sprintf "PING %s\n" (String.concat ~sep:" " servers));
       return t
     end
-    | Irc.Msg.Unknown s -> begin
-      Writer.write t.out_chan (sprintf "UNKNOWN %s\n" s);
+    | Irc.Msg.Raw s -> begin
+      Writer.write t.out_chan (sprintf "RAW %s\n" s);
       return t
     end
 
