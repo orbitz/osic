@@ -12,6 +12,8 @@ let parse_cmd args = function
   | _      -> None
 
 let parse s =
-  let open Option.Monad_infix in
-  String_ext.lsplit2 ~on:' ' s >>= fun (cmd, rest) ->
-  parse_cmd rest (String.uppercase cmd)
+  match String_ext.lsplit2 ~on:' ' s with
+    | Some (cmd, rest) ->
+      parse_cmd rest (String.uppercase cmd)
+    | None ->
+      parse_cmd "" (String.uppercase s)

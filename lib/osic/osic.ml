@@ -132,9 +132,10 @@ let server_in_chan root =
 
 let rec read_in_chan pipe_w in_chan =
   Pipe.read in_chan >>= function
-    | `Ok l ->
+    | `Ok l -> begin
       Pipe.write pipe_w (Run (dispatch_cmd l)) >>= fun () ->
       read_in_chan pipe_w in_chan
+    end
     | `Eof ->
       Pipe.write pipe_w Done
 

@@ -7,8 +7,9 @@ let to_string = function
       "MSG %s %s"
       (Cm.Msg.dst m)
       (Cm.Msg.msg m)
-  | Cm.Message.Join c -> "JOIN " ^ c
-  | Cm.Message.Part c -> "PART " ^ c
+  | Cm.Message.Join c    -> "JOIN " ^ c
+  | Cm.Message.Part c    -> "PART " ^ c
+  | Cm.Message.Reopen_out -> "REOPEN_OUT"
 
 let add_newline s = s ^ "\n"
 

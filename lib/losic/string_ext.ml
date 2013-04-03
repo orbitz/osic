@@ -23,3 +23,8 @@ let rec split_on_char ~on s =
       s1::(split_on_char ~on s2)
     | None ->
       [s]
+
+let splice s e str n =
+  String.sub str 0 s ^
+    n ^
+    String.sub str (e + 1) (String.length str - e - 1)
