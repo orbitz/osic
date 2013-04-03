@@ -1,5 +1,5 @@
 CAMLP4=
-OCAMLC_OPTS=-package core,async,async_unix
+OCAMLC_OPTS=-package core,async,async_unix,losic
 OCAMLOPT_OPTS=$(OCAMLC_OPTS)
 
 LIB_MODULES=fifo_tail.ml irc_msg.ml irc.ml

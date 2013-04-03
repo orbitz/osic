@@ -43,48 +43,42 @@ let mkfifo ?(perm = 0o666) path =
     ~name:"mkfifo"
     (fun () -> Core.Std.Unix.mkfifo ~perm path)
 
-let client_cmd t cmd args =
-  match cmd with
-    | "JOIN" -> begin
-      Irc.join t.irc ~password:None args;
+let client_cmd t m =
+  let module Cm = Losic.Ctl_message in
+  let module Om = Losic.Out_message in
+  let module Ob = Losic.Out_builder in
+  match m with
+    | Cm.Message.Whoami -> begin
+      Writer.write
+	t.out_chan
+	(Ob.build
+	   (Om.create (Om.Message.Whoami t.nick)));
       return t
     end
-    | "PART" -> begin
-      Irc.part t.irc args;
+    | Cm.Message.Join c -> begin
+      Irc.join t.irc ~password:None c;
       return t
     end
-    | "MSG" -> begin
-      let send_msg () =
-	let open Option.Monad_infix in
-	String.lsplit2 ~on:' ' args >>= fun (dst, msg) ->
-	Irc.msg t.irc ~dst msg;
-	None
-      in
-      ignore (send_msg ());
+    | Cm.Message.Part c -> begin
+      Irc.part t.irc c;
       return t
     end
-    | "WHOAMI" -> begin
-      Writer.write t.out_chan ("WHOAMI " ^ t.nick ^ "\n");
+    | Cm.Message.Msg m -> begin
+      Irc.msg t.irc ~dst:(Cm.Msg.dst m) (Cm.Msg.msg m);
       return t
     end
-    | "QUIT" -> begin
-      Irc.quit t.irc args;
-      return t
-    end
-    | "REOPEN_OUT" -> begin
+    | Cm.Message.Reopen_out -> begin
       Writer.close t.out_chan >>= fun () ->
       Writer.open_file ~append:true (Filename.concat t.root "out") >>= fun w ->
-      return { t with out_chan = w }
+      return { t with out_chan = w}
     end
-    | _ ->
-      return t
 
 let dispatch_cmd l t =
-  match String.lsplit2 ~on:' ' l with
-    | Some (cmd, args) ->
-      client_cmd t (String.uppercase cmd) args
+  match Losic.Ctl_parser.parse l with
+    | Some m ->
+      client_cmd t m
     | None ->
-      client_cmd t (String.uppercase l) ""
+      return t
 
 let extract_nick s =
   match String.lsplit2 ~on:'!' s with
@@ -94,24 +88,36 @@ let extract_nick s =
       s
 
 let irc_cmd msg t =
+  let module Ob = Losic.Out_builder in
+  let module Om = Losic.Out_message in
   match msg with
     | Irc.Msg.Privmsg pm -> begin
       Writer.write
 	t.out_chan
-	(sprintf "MSG %s %s %s\n"
-	   (extract_nick pm.Irc.Msg.src)
-	   pm.Irc.Msg.dst
-	   pm.Irc.Msg.msg);
+	(Ob.build
+	   (Om.create
+	      (Om.Message.Msg
+		 (Om.Msg.create
+		    ~src:(extract_nick pm.Irc.Msg.src)
+		    ~dst:pm.Irc.Msg.dst
+		    pm.Irc.Msg.msg))));
       return t;
     end
     | Irc.Msg.Ping servers -> begin
       Irc.pong t.irc servers;
-      Writer.write t.out_chan
-	(sprintf "PING %s\n" (String.concat ~sep:" " servers));
+      Writer.write
+	t.out_chan
+	(Ob.build
+	   (Om.create
+	      (Om.Message.Ping servers)));
       return t
     end
     | Irc.Msg.Raw s -> begin
-      Writer.write t.out_chan (sprintf "RAW %s\n" s);
+      Writer.write
+	t.out_chan
+	(Ob.build
+	   (Om.create
+	      (Om.Message.Raw s)));
       return t
     end
 
@@ -126,9 +132,10 @@ let server_in_chan root =
 
 let rec read_in_chan pipe_w in_chan =
   Pipe.read in_chan >>= function
-    | `Ok l ->
+    | `Ok l -> begin
       Pipe.write pipe_w (Run (dispatch_cmd l)) >>= fun () ->
       read_in_chan pipe_w in_chan
+    end
     | `Eof ->
       Pipe.write pipe_w Done
 

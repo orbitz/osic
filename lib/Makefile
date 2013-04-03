@@ -1,4 +1,4 @@
-SUBDIRS = osic
+SUBDIRS = losic osic
 
 all_apps = $(SUBDIRS)
 
@@ -14,6 +14,7 @@ test: $(subdirs_test)
 
 clean: $(subdirs_clean)
 
+osic: losic
 
 $(SUBDIRS):
 	$(MAKE) -C $@ .d
