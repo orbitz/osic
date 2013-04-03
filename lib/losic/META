@@ -1,0 +1,6 @@
+name="losic"
+version="0.0.0"
+description="Library for parsing and building osic messages"
+requires=""
+archive(byte)="losic.cma"
+archive(native)="losic.cmxa"
