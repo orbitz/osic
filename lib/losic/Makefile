@@ -6,7 +6,7 @@ OCAMLOPT_OPTS=$(OCAMLC_OPTS)
 LIB_MODULES=string_ext.ml option.ml \
 	out_message.ml out_parser.ml out_builder.ml \
 	ctl_message.ml ctl_builder.ml ctl_parser.ml \
-	loop.ml
+	ctl_writer.ml loop.ml
 NON_LIB_MODULES=
 
 BYTE_TARGETS=losic.cma
